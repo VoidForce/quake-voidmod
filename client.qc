@@ -1201,8 +1201,7 @@ void() PlayerPreThink =
 		self.velocity_z = velz;
 	}
 	//dprint2(ftos(self.button1), " but1 - \n");
-/*	
-	// well this suck balls hard
+/*	not good
 	velvec = self.velocity;
 	velvec_z = 0;
 	vellength = vlen(velvec);
@@ -1283,7 +1282,7 @@ void() PlayerPostThink =
 	}
 	
 /*	
-	// well this suck balls hard
+	// not good
 	velvec = self.velocity;
 	velvec_z = 0;
 	vellength = vlen(velvec);
