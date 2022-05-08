@@ -184,21 +184,13 @@ void() ApplyMultiDamage =
 	//dprint ("\n");
 	if (!multi_ent)
 		return;
-	if ( multi_pelletcounter > 9 ) 
-	{
-		if (!(self.ssgrefirebonus))
-			self.ssgrefirebonus = 1; //make ssg shoot faster when you hit all the pellets on single target
-		if (self.void_time > time) 
-			Knockback(self, multi_ent, 400, 100, 0);
-		if (multi_ent.monstertype == MT_SHAMBLER)
-			multi_ent.mut_ssgrefire += 1;
-	}
+
 	//if (multi_ent.monstertype == MT_SHAMBLER)
 	//	multi_damage *= 0.8;
 	T_Damage (multi_ent, self, self, multi_damage, 0, 0, 8);
 };
 
-void(entity hit, float damage, float addpellet) AddMultiDamage =
+void(entity hit, float damage) AddMultiDamage =
 {
 	if (!hit)
 		return;
@@ -210,12 +202,10 @@ void(entity hit, float damage, float addpellet) AddMultiDamage =
 		multi_ent = hit;
 	}
 	else
-	{
 		multi_damage = multi_damage + damage;
-		if ( addpellet ) multi_pelletcounter += 1;
-	}
-	//if (multi_ent.health < multi_damage)
-	//	ApplyMultiDamage ();
+
+	if (multi_ent.health < multi_damage)
+		ApplyMultiDamage ();
 };
 
 /*
@@ -234,7 +224,7 @@ TraceAttack
 void(float damage, vector dir, float typeofshot) TraceAttack =
 {
 	local	vector	vel, org;
-	local float calculate_falloff, calculated_damage, addpellets;
+	local float calculate_falloff, calculated_damage;
 	local float execution_health;
 	
 	vel = normalize(dir + v_up*crandom() + v_right*crandom());
@@ -296,8 +286,8 @@ void(float damage, vector dir, float typeofshot) TraceAttack =
 		ceil(calculated_damage);
 		
 //logic for ssg refire. All pellets should hit same target at full damage
-		if (damage > calculated_damage)	addpellets = 0;
-		else addpellets = 1;
+		//if (damage > calculated_damage)	addpellets = 0;
+		//else addpellets = 1;
 
 //Execution damage, we make more damage when target is below 30% of it's max hp, works for ssg only
 		if (typeofshot == 2 || typeofshot == 3) 
@@ -306,7 +296,7 @@ void(float damage, vector dir, float typeofshot) TraceAttack =
 			if (trace_ent.health < execution_health)
 				calculated_damage *= 1.5;	
 		}
-		AddMultiDamage (trace_ent, calculated_damage, addpellets );
+		AddMultiDamage (trace_ent, calculated_damage );
 		
 	}
 	else
@@ -579,18 +569,45 @@ void() W_FireShotgun =
 void( vector dir ) FireBulletsSSG =
 {
 	local	vector	src;
-	local float spreadsize;
 	local float i;
-	//local float ssgpattern[5];
-	
-	//dprint3(ftos(self.gltimer),ftos(self.entfloat1),"floats \n");
-	//makevectors(self.v_angle);
+	local entity refire_entity;
+	local float swap;
+	local vector direction;
+
 	src = self.origin + v_forward * 10;
 	src_z = self.absmin_z + self.size_z * 0.84;
-
+	
+	swap = 0.28;
+	//refire check
+	for (i = 0; i < 2; i++)
+	{
+		if (i) 
+			swap *= -1;
+		
+		direction = dir + swap * v_right;
+		traceline (src, src + direction * 64, FALSE, self);
+		
+		if ( trace_fraction == 1.0 ) //not hiting anything
+			break;
+		if (!trace_ent.tier) // hiting something that is not monster
+			break;
+		if (!i) 
+			refire_entity = trace_ent; // saving result of the first trace to compare it with the result of second trace
+		
+		if ( i && trace_ent != refire_entity ) // well, we hit two different entities, so it's no no
+			break;
+		else //success
+		{
+			if (!(self.ssgrefirebonus)) // we need to care about double refire from blade attack, and not change it accidently
+				self.ssgrefirebonus = 1; 
+			if (self.void_time > time) 
+				Knockback(self, trace_ent, 400, 100, 0);
+			if (trace_ent.monstertype == MT_SHAMBLER) // Shambler become more agressive with each successful refire attack on it
+				trace_ent.mut_ssgrefire += 1;
+		}
+	}
 	ClearMultiDamage ();
 	
-	spreadsize = 0.7;
 	// First float for FireMirror is: 1 = 4 shots, 2 = 2 shots, 0 = 1 shot
 	// type, damage, distance, coordx, coordy ...
 	
@@ -606,7 +623,6 @@ void( vector dir ) FireBulletsSSG =
 		for (i = 0; i < 11; i++)
 			fireMirror(0, 16, ssgdistance[i],  ssgx[i] * spreadsize,  ssgy[i] * spreadsize, src, dir, ssgfalloff[i]); //16
 	}
-
 	ApplyMultiDamage ();
 };
 
@@ -942,8 +958,8 @@ void() W_FireNailgun =
 		if (self.void_time > time) 
 			prjfvel = 1950;
 		else if (spreadfactor > 0)
-			prjfvel = 1000;
-		else prjfvel = 1000 + (-spreadfactor * 3000); 
+			prjfvel = 1200;
+		else prjfvel = 1200 + (-spreadfactor * 2500); 
 		if (self.v_angle_x)
 			newmis.velocity = v_forward*prjfvel + v_up * 200 + v_right * RLSPREADX[cyclevar] * spreadfactor;
 		else
