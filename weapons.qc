@@ -33,16 +33,15 @@ void() W_Precache =
 
 void (entity source, entity victim, float force, float forceup, float specialflag) Knockback =
 {
-	//if (forceup == 0 ) forceup = 100;
-	//if (force == 0 ) force = 400;
 	local float savez;
+	
 	if (victim.tier == 3) 
 	{
 		force *= 0.5;
 	}
 	
 	// legacy of Lunaran, code of quad damage axe knockback from copper mod used here as base
-	if ((victim.tier == 2 ||victim.tier == 3) &&  victim.health > 0 ) // 
+	if ((victim.tier == 2 ||victim.tier == 3) &&  victim.health > 0 )
 	{
 		local vector toss;
 		
@@ -52,8 +51,10 @@ void (entity source, entity victim, float force, float forceup, float specialfla
 		}
 		else 
 		{
-			if (specialflag == 1) toss = (victim.origin - source.origin);
-			else toss = (victim.origin - source.owner.origin);
+			if (specialflag == 1) 
+				toss = (victim.origin - source.origin);
+			else 
+				toss = (victim.origin - source.owner.origin);
 		}
 
 		if (specialflag == 1)
@@ -69,8 +70,7 @@ void (entity source, entity victim, float force, float forceup, float specialfla
 		
 		if (victim.flags & FL_ONGROUND)
 			victim.origin_z = victim.origin_z + 1;
-		//if (specialflag == 2) victim.velocity -= toss;
-		//else
+
 		savez = victim.velocity_z;
 		victim.velocity = toss;
 		victim.velocity_z += savez;
@@ -99,7 +99,7 @@ SpawnMeatSpray
 void(vector org, vector vel) SpawnMeatSpray =
 {
 	local	entity missile;//, mpuff;
-//	local	vector	org;
+	//local	vector	org;
 
 	missile = spawn ();
 	missile.owner = self;
@@ -113,7 +113,7 @@ void(vector org, vector vel) SpawnMeatSpray =
 
 	missile.avelocity = '3000 1000 2000';
 	
-// set missile duration
+	// set missile duration
 	missile.nextthink = time + 1;
 	missile.think = SUB_Remove;
 
@@ -179,14 +179,9 @@ void() ClearMultiDamage =
 
 void() ApplyMultiDamage =
 {
-	//dprint("pellets = ");
-	//dprint(ftos(multi_pelletcounter));
-	//dprint ("\n");
 	if (!multi_ent)
 		return;
 
-	//if (multi_ent.monstertype == MT_SHAMBLER)
-	//	multi_damage *= 0.8;
 	T_Damage (multi_ent, self, self, multi_damage, 0, 0, 8);
 };
 
@@ -237,59 +232,62 @@ void(float damage, vector dir, float typeofshot) TraceAttack =
 	{
 		SpawnBlood (org, vel*0.2, damage);
 		calculated_damage = damage;
-//  **------**------**------**------**------**------**------**------**
+		//  **------**------**------**------**------**------**------**------**
 		if ( typeofshot == 1 ) // shotgun damage calculations
 		{
 			T_Heal(self, 1, 0);
-			//trace_ent.velocity = '0 0 0';
+
 			if (( trace_fraction > 0.12 ) && ( trace_fraction < 0.2 )) // > 240 and < 400
 			{
 				calculate_falloff = (trace_fraction - 0.12) * 12.5;// 12.5 * 0.08 = 1.0 (100%)
+				
 				if (self.void_time  > time)	
 					calculated_damage = damage + (damage * 3 * calculate_falloff); // bonus 
-				else calculated_damage = damage + (damage * calculate_falloff); // smoothly increase damage up to double damage
+				else 
+					calculated_damage = damage + (damage * calculate_falloff); // smoothly increase damage up to double damage
 			}
 			else if ((trace_fraction >= 0.2) && (trace_fraction < 0.6)) // >= 400 and < 1200
 			{
+				// double damage from 400 to 900; 
 				if (self.void_time  > time)	
 					calculated_damage = damage * 4;
-				else calculated_damage = damage * 2;
-// double damage from 400 to 900; 
-												
+				else 
+					calculated_damage = damage * 2;
+
 				if (trace_fraction > 0.45) // > 900 and < 1200
 				{
 					calculate_falloff = (trace_fraction - 0.475) * 8; // 8* 0.125 = 1.0 (100%)
+					
 					if (self.void_time  > time)	
-						calculated_damage = (damage * 4) - (damage * 3 * calculate_falloff);	// bonus
-					else calculated_damage = (damage * 2) - (damage * calculate_falloff); // return to normal on long range
+						calculated_damage = (damage * 4) - (damage * 3 * calculate_falloff);// bonus
+					else 
+						calculated_damage = (damage * 2) - (damage * calculate_falloff); // return to normal on long range
 				}
 			}
 		}
-//  **------**------**------**------**------**------**------**------**
+		//  **------**------**------**------**------**------**------**------**
 		if ( typeofshot == 2 ) // supershotgun inner circle
 		{
 			if ( ( trace_fraction > 0.36 ) && ( trace_fraction < 0.52 ) ) // 720 - 1040
 			{
-				calculate_falloff = (trace_fraction - 0.36) * 3.125;// 5 * 0.16 = 0.8 (80%) //6.25
+				calculate_falloff = (trace_fraction - 0.36) * 3.125; // 5 * 0.16 = 0.8 (80%) //6.25
 				calculated_damage = damage - (damage * calculate_falloff);
 			}
-			else if (trace_fraction >= 0.52) calculated_damage = damage * 0.5; //0.2 // 1040
+			else if (trace_fraction >= 0.52) 
+				calculated_damage = damage * 0.5; //0.2 // 1040
 		}
-//  **------**------**------**------**------**------**------**------**
+		//  **------**------**------**------**------**------**------**------**
 		if ( typeofshot == 3 ) // supershotgun outer circle
 		{
-			if (( trace_fraction > 0.064 ) && ( trace_fraction < 0.256 )) calculated_damage = damage * 0.75; // .5
-			if ( trace_fraction >= 0.256) calculated_damage = damage * 0.5; // .25
+			if (( trace_fraction > 0.064 ) && ( trace_fraction < 0.256 )) 
+				calculated_damage = damage * 0.75; // .5
+			if ( trace_fraction >= 0.256) 
+				calculated_damage = damage * 0.5; // .25
 		}
-//  **------**------**------**------**------**------**------**------**
-
+		//  **------**------**------**------**------**------**------**------**
 		ceil(calculated_damage);
 		
-//logic for ssg refire. All pellets should hit same target at full damage
-		//if (damage > calculated_damage)	addpellets = 0;
-		//else addpellets = 1;
-
-//Execution damage, we make more damage when target is below 30% of it's max hp, works for ssg only
+	//Execution damage, we make more damage when target is below 30% of it's max hp, works for ssg only
 		if (typeofshot == 2 || typeofshot == 3) 
 		{
 			execution_health = trace_ent.max_health * 0.3;
@@ -326,8 +324,9 @@ void(float shotcount, float damage, vector dir, vector spread) FireBullets =
 
 	src = self.origin + v_forward*10;
 	src_z = self.absmin_z + self.size_z * 0.84;
-
+	
 	ClearMultiDamage ();
+	
 	while (shotcount > 0)
 	{
 		direction = dir + crandom()*spread_x*v_right + crandom()*spread_y*v_up;
@@ -356,7 +355,8 @@ void( float symmetry, float damage, float fdistance, float Xfactor, float Yfacto
 		// do straight shot
 		direction = dir + Xfactor * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		return;
 	}
 	else if ( symmetry == 1)
@@ -364,19 +364,23 @@ void( float symmetry, float damage, float fdistance, float Xfactor, float Yfacto
 		// same as firs one, but add inversions for each coordinate x/-x y/-y
 		direction = dir + Xfactor * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + (-Xfactor) * v_right + (-Yfactor) * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + (-Xfactor) * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + Xfactor * v_right + (-Yfactor) * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		return;
 	}
 	else if ( symmetry == 2) 
@@ -384,11 +388,13 @@ void( float symmetry, float damage, float fdistance, float Xfactor, float Yfacto
 		// Trace on original coordinates, then do full inversion
 		direction = dir + Xfactor * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + (-Xfactor) * v_right + (-Yfactor) * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		return;
 	}
 	else if ( symmetry == 3) 
@@ -396,11 +402,13 @@ void( float symmetry, float damage, float fdistance, float Xfactor, float Yfacto
 		// Trace on original coordinates, then do inversion of X
 		direction = dir + Xfactor * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + (-Xfactor) * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		return;
 	}
 	else if ( symmetry == 4) 
@@ -408,11 +416,13 @@ void( float symmetry, float damage, float fdistance, float Xfactor, float Yfacto
 		// Trace on original coordinates, then do inversion of Y
 		direction = dir + Xfactor * v_right + Yfactor * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		
 		direction = dir + Xfactor * v_right + (-Yfactor) * v_up;
 		traceline (src, src + direction * fdistance, FALSE, self);
-		if (trace_fraction != 1.0)	TraceAttack (damage, direction, typeofshot);
+		if (trace_fraction != 1.0)	
+			TraceAttack (damage, direction, typeofshot);
 		return;
 	}
 };
@@ -442,7 +452,8 @@ void(float axedamage) W_FireAxe =
 		if (trace_fraction == 1.0)
 		{
 			traceline (source, source + v_forward*96 + v_right * -10, FALSE, self);
-			if (trace_fraction == 1.0) 	return;
+			if (trace_fraction == 1.0) 
+				return;
 		}
 	}
 	
@@ -520,29 +531,31 @@ void( vector dir ) FireBulletsSG =
 	local	vector	src;
 	local float combodamage;
 	local float i;
-	//local float spreadsize;
 
-	//makevectors(self.v_angle);
 	src = self.origin + v_forward * 10;
 	src_z = self.absmin_z + self.size_z * 0.84;
 
 	ClearMultiDamage ();
-	//spreadsize = 1.35;
-	// First float for fireMirror is: 1 = 4 shots, 2 = 2 shots, 0 = 1 shot
-	// type, damage, distance, coordx, coordy ...
+	
 	combodamage = 6;
+	
 	if (self.items & IT_RIFLE)
-	combodamage = 24;
-
+		combodamage = 24;
+	
 	for (i = 0; i < 4; i++) 
 		fireMirror(0, combodamage, 2000, sgx[i], sgy[i], src, dir, 1); // last number is falloff formula
-
+		// First float for fireMirror is: 1 = 4 shots, 2 = 2 shots, 0 = 1 shot
+		// type, damage, distance, coordx, coordy ...
+	
 		if (multi_ent != world && multi_damage > 47) 
 		{
 			if (!(self.quad_time > time))
 			{
-				if ( (multi_damage == 48 && !(self.void_time) ) || multi_damage == 96 )	StyleGive(self, 50, 1, 0);
-				if (multi_damage == 192) StyleGive(self, 100, 1, 0);
+				if ( (multi_damage == 48 && !(self.void_time) ) || multi_damage == 96 )
+					StyleGive(self, 50, 1, 0);
+				
+				if (multi_damage == 192)
+					StyleGive(self, 100, 1, 0);
 			}
 		}
 
@@ -555,9 +568,7 @@ void() W_FireShotgun =
 		
 	sound (self ,CHAN_WEAPON, "weapons/guncock.wav", 1, ATTN_NORM);	
 	self.punchangle_x = - 2;
-	
-	//self.currentammo = self.ammo_shells = self.ammo_shells - 1;
-	dir = v_forward;//aim (self, 1000);
+	dir = v_forward;	//aim (self, 1000);
 	FireBulletsSG ( dir );
 };
 
@@ -577,7 +588,8 @@ void( vector dir ) FireBulletsSSG =
 	src = self.origin + v_forward * 10;
 	src_z = self.absmin_z + self.size_z * 0.84;
 	
-	swap = 0.28;
+	swap = 0.28; // x coordinate for two traces that should hit same target in order to trigger refire
+	
 	//refire check
 	for (i = 0; i < 2; i++)
 	{
@@ -587,22 +599,27 @@ void( vector dir ) FireBulletsSSG =
 		direction = dir + swap * v_right;
 		traceline (src, src + direction * 64, FALSE, self);
 		
-		if ( trace_fraction == 1.0 ) //not hiting anything
-			break;
-		if (!trace_ent.tier) // hiting something that is not monster
-			break;
+		if ( trace_fraction == 1.0 ) 
+			break; // not hiting anything
+		if (!trace_ent.tier) 
+			break; // hiting something that is not monster
 		if (!i) 
 			refire_entity = trace_ent; // saving result of the first trace to compare it with the result of second trace
 		
-		if ( i && trace_ent != refire_entity ) // well, we hit two different entities, so it's no no
-			break;
+		
+		if ( i && trace_ent != refire_entity ) 
+			break; // well, we hit two different entities, so it's no no
 		else //success
 		{
-			if (!(self.ssgrefirebonus)) // we need to care about double refire from blade attack, and not change it accidently
+			// we need to care about double refire from blade attack, and not change it accidently
+			if (!(self.ssgrefirebonus)) 
 				self.ssgrefirebonus = 1; 
+				
 			if (self.void_time > time) 
 				Knockback(self, trace_ent, 400, 100, 0);
-			if (trace_ent.monstertype == MT_SHAMBLER) // Shambler become more agressive with each successful refire attack on it
+			
+			// Shambler become more agressive with each successful refire attack on it
+			if (trace_ent.monstertype == MT_SHAMBLER) 
 				trace_ent.mut_ssgrefire += 1;
 		}
 	}
@@ -610,9 +627,6 @@ void( vector dir ) FireBulletsSSG =
 	
 	// First float for FireMirror is: 1 = 4 shots, 2 = 2 shots, 0 = 1 shot
 	// type, damage, distance, coordx, coordy ...
-	
-	// this looks messy, but it's a better way to shoot a pattern from left to right, so the damage numbers combine well by target.
-
 	if (self.void_time > time)	
 	{
 		for (i = 0; i < 14; i++) 
@@ -648,32 +662,23 @@ void(float damage, float spiketype) basictouch =
 	if (other == self.owner)
 		return;
 
-	//if (other.solid == SOLID_TRIGGER)
-	//	return;	// trigger field, do nothing
-
 	if (pointcontents(self.origin) == CONTENT_SKY)
 	{
 		remove(self);
 		return;
 	}
-	
-	// hit something that bleeds
+
 	if (other.takedamage)
 	{
-		//if (other.health < (other.max_health * 0.3))
-		//	damage *=2;
 		spawn_touchblood (damage);
 		
 		if (spiketype == 1) // normal(weak)
-		{ 
-			//Knockback(self.owner, other, 100, 50, 0);
 			T_Damage (other, self, self.owner, damage, 0, 0, 4);
-		}
 		else if (spiketype == 2)	//deviated (strong)
 		{
-			//Knockback(self.owner, other, 100, 50, 0);
 			if (self.owner.void_time > time)
 				StyleGive(self.owner, 15, 5, 1);
+			
 			T_Damage (other, self, self.owner, damage, 0, 0, 0);
 		}
 	}
@@ -691,13 +696,11 @@ void(float damage, float spiketype) basictouch =
 void() sng_touch =
 {
 	basictouch(self.dmg,1);
-	//remove(self);
 };
 
 void() sngs_touch =
 {
 	basictouch(self.dmg,2);
-	//remove(self);
 };
 
 /*
@@ -777,8 +780,13 @@ void() homing_think =
 		self.velocity_x = self.velocity_x + (random()*600 - random()*600);
 		self.velocity_y = self.velocity_y + (random()*600 - random()*600);
 		self.velocity_z = self.velocity_z + (random()*600 - random()*600);
-		if (self.dmg > 60) self.dmg -= 20;
-		if (self.dmg < 60) self.dmg = 60;
+		
+		if (self.dmg > 60) 
+			self.dmg -= 20;
+		
+		if (self.dmg < 60) 
+			self.dmg = 60;
+		
 		self.angles = vectoangles(self.velocity);
 		self.think = homing_think;
 		self.nextthink = time + 0.1;
@@ -819,10 +827,12 @@ void (vector dir, float offsetX, float offsetY, float nvelocity, float splittime
 	newmis.movetype = MOVETYPE_FLYMISSILE;
 	newmis.solid = SOLID_BBOX;
 	newmis.angles = vectoangles(dir);
+	
 	if (self.void_time > time) 
 		newmis.dmg = 60;
 	else	
 		newmis.dmg = 30;
+	
 	newmis.touch = sng_touch;
 	newmis.projtype = ntype;
 	newmis.classname = "spike";
@@ -840,9 +850,6 @@ void() NailTouch =
 {
 	if (other == self.owner)
 		return;
-
-	/*if (other.solid == SOLID_TRIGGER)
-		return;	// trigger field, do nothing*/
 
 	if (pointcontents(self.origin) == CONTENT_SKY)
 	{
@@ -871,16 +878,18 @@ void() NailTouch =
 		WriteCoord (MSG_BROADCAST, self.origin_z);
 		
 		self.angles = vectoangles(self.velocity);
+		
 		if (self.velocity == '0 0 0') 
 			remove(self);
+		
 		self.projectiledamage -=10;
-		if (self.projectiledamage < 10) remove(self);
+		
+		if (self.projectiledamage < 10) 
+			remove(self);
 	}
 	
 	if (other.takedamage == DAMAGE_YES) //buttons etc
-	{
 		T_Damage(other, self, self.owner, 40, 0, 0, 0);
-	}
 };
 
 void() deviate_think =
@@ -931,9 +940,12 @@ void() W_FireNailgun =
 	
 	if (spreadfactor < -0.3)
 		spreadfactor = -0.3;
+	
 	damagefactor = 10 + (60 * (0.7 - spreadfactor));
+	
 	if (damagefactor > 60) 
 		damagefactor = 60;
+	
 	if (self.void_time > time) 
 		damagefactor *= 1.5;
 	
@@ -959,9 +971,11 @@ void() W_FireNailgun =
 			prjfvel = 1950;
 		else if (spreadfactor > 0)
 			prjfvel = 1200;
-		else prjfvel = 1200 + (-spreadfactor * 2500); 
+		else 
+			prjfvel = 1200 + (-spreadfactor * 2500); 
+		
 		if (self.v_angle_x)
-			newmis.velocity = v_forward*prjfvel + v_up * 200 + v_right * RLSPREADX[cyclevar] * spreadfactor;
+			newmis.velocity = v_forward*prjfvel + v_up * 200;// + v_right * RLSPREADX[cyclevar] * spreadfactor;
 		else
 		{
 			newmis.velocity = v_forward;//aim(self, 1000);
@@ -971,6 +985,7 @@ void() W_FireNailgun =
 		
 		cyclevar++;
 	}
+	
 	self.punchangle_x = -2;
 };
 
@@ -1016,7 +1031,6 @@ void(float firetype) W_FireSuperNailgun =
 		spawnnail( v_forward, 0.0, -4, 1950, 0.10, 0 );
 		self.currentammo = self.ammo_nails = self.ammo_nails - 1;
 	}
-	//self.currentammo = self.ammo_nails = self.ammo_nails - 1;
 	
 	self.punchangle_x = -3;
 };
@@ -1055,11 +1069,18 @@ void(float exptype) BecomeExplosion =
 	self.movetype = MOVETYPE_NONE;
 	self.velocity = '0 0 0';
 	self.touch = SUB_Null;
-	if (exptype) setmodel (self, "progs/combo_expl.spr");
-	else setmodel (self, "progs/s_explod.spr");
+	
+	if (exptype) 
+		setmodel (self, "progs/combo_expl.spr");
+	else 
+		setmodel (self, "progs/s_explod.spr");
+	
 	self.solid = SOLID_NOT;
-	if (exptype) s_cexplode1 ();
-	else s_explode1 ();
+	
+	if (exptype) 
+		s_cexplode1 ();
+	else 
+		s_explode1 ();
 };
 
 void() GrenadeCombo =
@@ -1087,7 +1108,6 @@ void() GrenadeExplodeOnDemand =
 	{
 		T_RadiusDamage (self, self.owner, 160, world, 320, 96);
 		T_RadiusDamageSelf(self, self.owner, 80, 200, 64);
-		
 	}
 	else
 	{
@@ -1107,8 +1127,10 @@ void() GrenadeExplodeOnDemand =
 void() GrenadeExplode =
 {
 	self.grenadestate = 0;
+	
 	if (self.owner.plgrenade == self)
 		self.owner.plgrenade = world;
+	
 	T_RadiusDamage (self, self.owner, 100, world, 320, 192);
 	T_RadiusDamageSelf(self, self.owner, 80, 200, 64);
 
@@ -1124,19 +1146,18 @@ void() GrenadeExplode =
 
 void() GrenadeTouch =
 {
-	local float	damg;
-	local float radamg;
+	local float	damg;	// direct hit damage
+	local float radamg; // radius damage
 
 	if (other == self.owner)
 		return;		// don't explode on owner
-	
-	//damg = 140;// + random()*20;
+
 	radamg = 80;
-	//if (other.health)
+	
 	if (other.takedamage == DAMAGE_AIM)
 	{
 		damg = 140;
-		//if (!(self.grenadestate))
+
 		if (self.skin == 0)
 		{
 			radamg = 40;
@@ -1144,24 +1165,22 @@ void() GrenadeTouch =
 			if (self.owner.void_time > time)
 				damg += 120;
 		}
+		
 		self.grenadestate = 0;
 		self.owner.plgrenade = world;
 		StyleGive(self.owner, 20, 6, 0);
-		//if (other.monstertype == MT_SHAMBLER) damg = damg * 0.5;	// mostly immune
 		T_Damage (other, self, self.owner, damg, 0, 1, 32);
-		// knockback moved past T_DAMAGE, so we can check onground flag properly;
+
 		if (self.owner.void_time > time)
-		{	
 			Knockback(self, other, -600, 100, 0);
-		}
-		// don't do radius damage to the other, because all the damage
-		// was done in the impact
+		
+		// don't do radius damage to the other, because all the damage was done in the impact
+		
+		//hardcoded value for the case when we manually detonate the grenade and it hits the 
+		//enemy, so most of the damage goes in a single target, doing less damage as AOE
+
 		if (radamg < 80) 
-		{
-			//hardcoded value for the case when we manually detonate the grenade and it hits the 
-			//enemy, so most of the damage goes in a single target, doing less damage as AOE
 			T_RadiusDamage (self, self.owner, radamg, other, 160, 96);
-		}
 		else
 			T_RadiusDamage (self, self.owner, radamg, other, 192, 160);
 		T_RadiusDamageSelf(self, self.owner, 80, 200, 64);
@@ -1184,7 +1203,7 @@ void() GrenadeTouch =
 	
 	sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);	// bounce sound
 	if (self.velocity == '0 0 0')
-	self.avelocity = '0 0 0';
+		self.avelocity = '0 0 0';
 };
 
 void(entity who) DetonateLiveGrenade
@@ -1355,8 +1374,12 @@ void() W_FireRocket =
 	plrocket.classname = "missile";
 	//plrocket.monstertype = MISC_ROCKET;
 	plrocket.velocity = normalize(dir); 
-	if (self.void_time > time) plrocket.velocity = plrocket.velocity * 1400;
-	else plrocket.velocity = plrocket.velocity * 900;
+	
+	if (self.void_time > time)
+		plrocket.velocity = plrocket.velocity * 1400;
+	else 
+		plrocket.velocity = plrocket.velocity * 900;
+	
 	plrocket.angles = vectoangles(plrocket.velocity);
 	plrocket.touch = RocketTouch;
 	plrocket.think = RocketExplode;
@@ -1907,16 +1930,20 @@ void() W_Attack =
 			DoWeaponDelay( 0.9, 0.7, 0.3 ); // Standart RPM, Quad RPM, Weapon Switch Delay.
 		
 			//weapon specific timer to prevent fastswitch abuse
-			if (self.void_time  > time) self.sg_cooldown = time + 0.7;
-			else self.sg_cooldown = time + 0.9;
+			if (self.void_time  > time) 
+				self.sg_cooldown = time + 0.7;
+			else 
+				self.sg_cooldown = time + 0.9;
 		}
 		else
 		{
 			DoWeaponDelay( 0.5, 0.375, 0.3 ); // Standart RPM, Quad RPM, Weapon Switch Delay.
 		
 			//weapon specific timer to prevent fastswitch abuse
-			if (self.void_time  > time) self.sg_cooldown = time + 0.375;
-			else self.sg_cooldown = time + 0.5;
+			if (self.void_time  > time) 
+				self.sg_cooldown = time + 0.375;
+			else 
+				self.sg_cooldown = time + 0.5;
 		}
 	}
 //------------------------------------------------------------------------------------------------------------------------------
@@ -1939,7 +1966,8 @@ void() W_Attack =
 			//weapon specific timer to prevent fastswitch abuse
 			if (self.void_time  > time) 
 				self.ssg_cooldown = time + 0.225;
-			else self.ssg_cooldown = time + 0.325;
+			else 
+				self.ssg_cooldown = time + 0.325;
 			
 			DoWeaponDelay( 0.325, 0.225, 0.25 ); 
 			
@@ -1954,7 +1982,8 @@ void() W_Attack =
 			//weapon specific timer to prevent fastswitch abuse
 			if (self.void_time  > time) 
 				self.ssg_cooldown = time + 0.81;
-			else self.ssg_cooldown = time + 0.9;
+			else 
+				self.ssg_cooldown = time + 0.9;
 			
 			DoWeaponDelay( 0.9, 0.81, 0.4 ); 
 		}
@@ -1970,7 +1999,8 @@ void() W_Attack =
 		}
 		if (self.void_time  > time) 
 			self.nailgun_time = time + 0.4;
-		else self.nailgun_time = time + 0.7;
+		else 
+			self.nailgun_time = time + 0.7;
 	
 		self.vmflags = self.vmflags | VMF_PLAYER_INSEQUENCE;
 		player_nailgunloop();
@@ -1988,7 +2018,8 @@ void() W_Attack =
 			return;
 		if (self.void_time  > time) 
 			self.sng_cooldown = time + 0.4;
-		else self.sng_cooldown = time + 0.9;
+		else 
+			self.sng_cooldown = time + 0.9;
 		
 		player_sngloop(); 
 		W_FireSuperNailgun(2);
@@ -2027,10 +2058,8 @@ void() W_Attack =
 //------------------------------------------------------------------------------------------------------------------------------
 	else if (self.weapon == IT_GRENADE_LAUNCHER)
 	{
-		//DetonateLiveGrenade(self);
 		player_rocket1();
 		W_FireGrenade();
-
 		DoWeaponDelay( 0.6, 0.54, 0.3 ); 
 	}
 //------------------------------------------------------------------------------------------------------------------------------
@@ -2038,15 +2067,16 @@ void() W_Attack =
 	{
 		if (self.rl_cooldown > time ) 
 			return;
+		
 		W_FireRocket();
 		player_rocket1();
-		//player_rocketburst1();
-			
 		DoWeaponDelay( 0.8, 0.72, 0.4 ); 
-		
+	
 		//weapon specific timer to prevent fastswitch abuse
-		if (self.void_time  > time) self.rl_cooldown = time + 0.72;
-		else self.rl_cooldown = time + 0.8;
+		if (self.void_time  > time) 
+			self.rl_cooldown = time + 0.72;
+		else 
+			self.rl_cooldown = time + 0.8;
 	}
 //------------------------------------------------------------------------------------------------------------------------------
 	else if (self.weapon == IT_LIGHTNING)
@@ -2064,11 +2094,11 @@ void() W_Attack =
 		//player_rail1();
 		sound (self, CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
 
-		//DoWeaponDelay( 1.50, 1.35, 0.90 ); // Standart RPM, Quad RPM, Weapon Switch Delay.
-		
 		//weapon specific timer to prevent fastswitch abuse
-		if (self.void_time  > time) self.lg_cooldown = time + 1.35;
-		else self.lg_cooldown = time + 1.50;
+		if (self.void_time  > time) 
+			self.lg_cooldown = time + 1.35;
+		else 
+			self.lg_cooldown = time + 1.50;
 	}
 };
 /*
